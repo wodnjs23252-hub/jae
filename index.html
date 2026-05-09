@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="AI 초보자와 직장인을 위한 인터랙티브 프롬프트 자동 생성 도구"
+      content="간단한 목적만 입력하면 바로 쓸 수 있는 AI 프롬프트를 만들어주는 도구"
     />
     <title>프롬프트 빌더</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="app-shell">
-      <section class="workspace" aria-label="프롬프트 생성기">
+      <section class="workspace" aria-label="프롬프트 빌더">
         <header class="topbar">
           <div class="brand">
             <div class="brand-mark" aria-hidden="true">PB</div>
@@ -21,134 +21,94 @@
               <h1>프롬프트 빌더</h1>
             </div>
           </div>
-          <div class="quality-pill" title="입력 정보의 구체성과 출력 형식을 기준으로 계산합니다.">
-            <span id="qualityScore">0</span>
-            <small>품질 점수</small>
-          </div>
+          <button class="ghost-button" type="button" id="resetButton" title="입력 초기화">초기화</button>
         </header>
 
         <div class="builder-grid">
-          <section class="input-panel" aria-label="입력 영역">
+          <section class="input-panel" aria-label="목적 입력">
             <div class="section-heading">
               <span class="step-badge">1</span>
               <div>
-                <h2>무엇을 만들고 싶나요?</h2>
-                <p>간단히 적으면 목적에 맞는 템플릿을 추천합니다.</p>
+                <h2>목적만 적어주세요</h2>
+                <p>나머지 구조, 역할, 출력 형식은 자동으로 맞춰서 프롬프트를 만듭니다.</p>
               </div>
             </div>
 
-            <label class="field">
-              <span>목적</span>
+            <label class="field purpose-field">
+              <span>만들고 싶은 것</span>
               <textarea
-                id="goal"
-                rows="4"
-                placeholder="예: 기존 고객에게 신제품을 소개하는 이메일을 만들고 싶어요."
+                id="purpose"
+                rows="7"
+                placeholder="예: 신제품을 기존 고객에게 소개하는 이메일을 만들고 싶어"
+                autofocus
               ></textarea>
             </label>
 
-            <div class="recommendation" id="recommendationBox" hidden>
-              <span id="recommendationText"></span>
-              <button type="button" id="applyRecommendation" title="추천 템플릿 적용">적용</button>
+            <div class="example-row" aria-label="예시 목적">
+              <button type="button" class="example-chip">회의록을 핵심만 요약해줘</button>
+              <button type="button" class="example-chip">인스타 홍보 문구 3개 만들어줘</button>
+              <button type="button" class="example-chip">파이썬 오류를 고치는 질문을 만들어줘</button>
             </div>
 
-            <div class="section-heading compact">
-              <span class="step-badge">2</span>
-              <div>
-                <h2>템플릿 선택</h2>
-                <p>업무 유형에 맞춰 프롬프트 구조가 달라집니다.</p>
+            <details class="advanced-box">
+              <summary>필요하면 세부 옵션 추가</summary>
+              <div class="advanced-grid">
+                <label class="field">
+                  <span>결과 형식</span>
+                  <select id="outputType">
+                    <option value="">자동</option>
+                    <option>이메일</option>
+                    <option>요약문</option>
+                    <option>보고서</option>
+                    <option>마케팅 문구</option>
+                    <option>코드 요청서</option>
+                    <option>학습 계획</option>
+                    <option>표</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>톤</span>
+                  <select id="tone">
+                    <option value="">자동</option>
+                    <option>전문적이고 설득력 있는</option>
+                    <option>친근하고 쉬운</option>
+                    <option>간결하고 실용적인</option>
+                    <option>창의적이고 생동감 있는</option>
+                  </select>
+                </label>
+
+                <label class="field wide">
+                  <span>대상</span>
+                  <input id="audience" type="text" placeholder="예: 고객, 팀장, 초보 개발자" />
+                </label>
               </div>
+            </details>
+
+            <div class="button-row">
+              <button class="primary-button" type="button" id="copyButton">프롬프트 복사</button>
+              <span id="autoLabel" class="auto-label">입력하면 자동 생성됩니다</span>
             </div>
-
-            <div class="template-grid" id="templateGrid" aria-label="템플릿 목록"></div>
-
-            <div class="section-heading compact">
-              <span class="step-badge">3</span>
-              <div>
-                <h2>세부 조건</h2>
-                <p>모르는 항목은 비워도 기본값으로 보완합니다.</p>
-              </div>
-            </div>
-
-            <div class="form-grid">
-              <label class="field">
-                <span>대상</span>
-                <input id="audience" type="text" placeholder="예: 기존 고객, 팀장, 초등학생" />
-              </label>
-              <label class="field">
-                <span>결과 형식</span>
-                <select id="outputType">
-                  <option value="">선택</option>
-                  <option>이메일</option>
-                  <option>보고서</option>
-                  <option>요약문</option>
-                  <option>표</option>
-                  <option>체크리스트</option>
-                  <option>코드 요청서</option>
-                  <option>학습 계획</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>분야</span>
-                <input id="domain" type="text" placeholder="예: 마케팅, 개발, 교육" />
-              </label>
-              <label class="field">
-                <span>톤앤매너</span>
-                <select id="tone">
-                  <option>명확하고 실용적인</option>
-                  <option>전문적이고 설득력 있는</option>
-                  <option>친근하고 쉬운</option>
-                  <option>간결하고 단호한</option>
-                  <option>창의적이고 생동감 있는</option>
-                </select>
-              </label>
-            </div>
-
-            <label class="field">
-              <span>제약조건</span>
-              <textarea
-                id="constraints"
-                rows="3"
-                placeholder="예: 500자 이내, 표 형식 포함, 어려운 용어는 설명"
-              ></textarea>
-            </label>
-
-            <label class="field">
-              <span>참고 자료</span>
-              <textarea
-                id="sourceText"
-                rows="4"
-                placeholder="요약하거나 분석할 원문, 회의 메모, 핵심 자료를 붙여넣으세요."
-              ></textarea>
-            </label>
           </section>
 
           <aside class="preview-panel" aria-label="프롬프트 미리보기">
             <div class="preview-toolbar">
               <div>
                 <p class="eyebrow">Preview</p>
-                <h2>완성 프롬프트</h2>
+                <h2>자동 생성 프롬프트</h2>
               </div>
-              <div class="toolbar-actions">
-                <button class="icon-button" type="button" id="resetButton" title="초기화" aria-label="초기화">
-                  ↺
-                </button>
-                <button class="primary-button" type="button" id="copyButton" title="프롬프트 복사">
-                  복사
-                </button>
-              </div>
+              <div class="template-pill" id="templatePill">자동 분류 대기</div>
             </div>
-
-            <div class="warning-list" id="warningList" aria-live="polite"></div>
 
             <textarea id="promptPreview" class="prompt-preview" spellcheck="false"></textarea>
 
-            <div class="history-block">
+            <section class="history-block" aria-label="최근 프롬프트">
               <div class="history-heading">
-                <h3>최근 생성</h3>
+                <h3>최근 복사</h3>
                 <button type="button" id="clearHistory">비우기</button>
               </div>
               <div id="historyList" class="history-list"></div>
-            </div>
+            </section>
           </aside>
         </div>
       </section>
